@@ -43,7 +43,7 @@ tasks.register('distBundleZipAll') {
     description = 'Assembles and zips up a Liferay bundle for each of the defined config environments.'
     group = 'bundle'
     doLast {
-        println 'Lets build some bundles'
+        println 'Lets deploy some bundles now'
 
     }
     dependsOn(envs)
