@@ -1,0 +1,36 @@
+// Check GETTING_STARTED.markdown for information regarding usage.
+
+
+
+
+class PrintToolVersionTask extends DefaultTask {
+    String tool
+
+    @TaskAction
+    void printToolVersion() {
+        switch (tool) {
+            case 'java':
+                println System.getProperty("java.version")
+                break
+            case 'groovy':
+                println GroovySystem.version
+                break
+            default:
+                throw new IllegalArgumentException("Unknown tool")
+        }
+    }
+}
+
+task printJavaVersion(type : PrintToolVersionTask) {
+    tool 'java'
+}
+
+task printGroovyVersion(type : PrintToolVersionTask) {
+    tool 'groovy'
+}
+
+dependencies {
+//    classpath(group: "com.liferay", name: "com.liferay.gradle.plugins.workspace", version: "3.4.12") {
+//        exclude group: "biz.aQute.bnd", module: "biz.aQute.bnd"
+//    }
+}
