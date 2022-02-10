@@ -1,36 +1,50 @@
 // Check GETTING_STARTED.markdown for information regarding usage.
 
+import java.nio.file.*;
 
+def envs = []
 
+new File("configs").traverse( [maxDepth: 0, excludeNameFilter: /common/,
+                               type: groovy.io.FileType.DIRECTORIES]){
 
-class PrintToolVersionTask extends DefaultTask {
-    String tool
+    def bundleEnv = "${it.name}"
 
-    @TaskAction
-    void printToolVersion() {
-        switch (tool) {
-            case 'java':
-                println System.getProperty("java.version")
-                break
-            case 'groovy':
-                println GroovySystem.version
-                break
-            default:
-                throw new IllegalArgumentException("Unknown tool")
+    envs << "distBuildZip${bundleEnv}"
+
+    tasks.register( "distBuildZip${bundleEnv}" ){
+
+        doLast{
+            println "Running Zip for ${bundleEnv}"
+
+            exec {
+                workingDir '.'
+                commandLine('blade', 'gw', 'distBundleZip', "-Pliferay.workspace.environment=${bundleEnv}")
+            }
+
+            println "Renaming bundle in ${buildDir.path}/${project.name}-${bundleEnv}.zip"
+            Path source = Paths.get("${buildDir.path}/${project.name}.zip");
+
+            try{
+                Files.move(source, source.resolveSibling("${project.name}-${bundleEnv}.zip"),
+                        StandardCopyOption.REPLACE_EXISTING);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
+
     }
+
 }
 
-task printJavaVersion(type : PrintToolVersionTask) {
-    tool 'java'
-}
 
-task printGroovyVersion(type : PrintToolVersionTask) {
-    tool 'groovy'
-}
+tasks.register('distBundleZipAll') {
+    description = 'Assembles and zips up a Liferay bundle for each of the defined config environments.'
+    group = 'bundle'
+    doLast {
+        println 'Lets build some bundles'
 
-dependencies {
-//    classpath(group: "com.liferay", name: "com.liferay.gradle.plugins.workspace", version: "3.4.12") {
-//        exclude group: "biz.aQute.bnd", module: "biz.aQute.bnd"
-//    }
+    }
+    dependsOn(envs)
 }
